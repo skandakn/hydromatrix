@@ -16,6 +16,12 @@
 [![ElevenLabs](https://img.shields.io/badge/ElevenLabs-Neural_Voice_TTS-ff5500?style=for-the-badge)](https://elevenlabs.io/)
 [![Exotel](https://img.shields.io/badge/Exotel-Cloud_Telephony_IVR-0ea5e9?style=for-the-badge)](https://exotel.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL_Persistence-3ecf8e?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Vercel Deployment](https://img.shields.io/badge/Live_Deployment-hydromatrixguard.vercel.app-00dfa2?style=for-the-badge&logo=vercel&logoColor=white)](https://hydromatrixguard.vercel.app)
+
+<br />
+
+> 🌐 **Live Web Application**: [https://hydromatrixguard.vercel.app](https://hydromatrixguard.vercel.app)
+
 
 **[⚡ Live Simulation Demo](#-quick-start) • [📐 Mathematical Formulations & NumPy Engine](#-mathematical-models--governing-equations) • [🏛️ System Architecture](#️-system-architecture) • [🎛️ Component Ecosystem](#️-comprehensive-component-ecosystem) • [🤖 Multimodal AI Voice & Telephony](#-multimodal-ai-voice--telephony-pipeline)**
 
