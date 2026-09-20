@@ -133,12 +133,26 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Security: Restrict CORS to trusted domains and regex for production/preview
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+configured_origins = [orig.strip() for orig in allowed_origins_env.split(",") if orig.strip()]
+
+trusted_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://hydromatrixguard.vercel.app",
+    "https://hydromatrixguard-bit-stack.vercel.app",
+]
+
+all_allowed_origins = list(dict.fromkeys(trusted_origins + configured_origins))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=all_allowed_origins,
+    allow_origin_regex=r"^https:\/\/hydromatrix[a-zA-Z0-9-]*(-bit-stack)?\.vercel\.app$",
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
 )
 
 
