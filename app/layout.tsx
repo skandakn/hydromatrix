@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   description: "High-stakes crisis command center and 2.5D hydrological simulation engine for urban flood resilience and early disaster warnings.",
 };
 
+const clerkPublishableKey =
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  "pk_test_cHJvdmVuLWhlbi00MDgyLmNsZXJrLmFjY291bnRzLmRldiQ";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -15,6 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
+      publishableKey={clerkPublishableKey}
       appearance={{
         variables: {
           colorPrimary: "#06b6d4",
@@ -36,4 +41,3 @@ export default function RootLayout({
     </ClerkProvider>
   );
 }
-
