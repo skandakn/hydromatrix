@@ -56,6 +56,12 @@ interface UIContextType {
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
 
+/**
+ * Marks that a visitor has already completed or dismissed the guided tour.
+ * Written by closeTour() and read by the dashboard on mount.
+ */
+export const TOUR_SEEN_STORAGE_KEY = 'flowshield_has_seen_tour';
+
 export function UIProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<SupportedLanguage>('en');
 
@@ -86,7 +92,9 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
   const [isFullscreenMap, setIsFullscreenMap] = useState(false);
 
   // Guided Onboarding Tour State
-  const [isTourOpen, setIsTourOpen] = useState(true);
+  // Starts closed so the tour never flashes for a returning visitor; the
+  // dashboard opens it on mount when TOUR_SEEN_STORAGE_KEY is absent.
+  const [isTourOpen, setIsTourOpen] = useState(false);
   const [tourStep, setTourStep] = useState(0);
 
   const [mapSettings, setMapSettings] = useState<MapViewSettings>({
@@ -201,6 +209,11 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
 
   const closeTour = useCallback(() => {
     setIsTourOpen(false);
+    try {
+      localStorage.setItem(TOUR_SEEN_STORAGE_KEY, 'true');
+    } catch {
+      // Ignore localStorage write errors
+    }
   }, []);
 
   const nextTourStep = useCallback(() => {

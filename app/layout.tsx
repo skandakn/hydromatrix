@@ -32,7 +32,7 @@ export default function RootLayout({
       }}
     >
       <html lang="en" className="dark">
-        <body className="bg-slate-950 text-slate-100 min-h-screen overflow-hidden antialiased select-none">
+        <body className="bg-slate-950 text-slate-100 min-h-screen overflow-hidden antialiased">
           <UIProvider>
             {children}
           </UIProvider>

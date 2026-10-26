@@ -11,6 +11,7 @@
 
 import React from 'react';
 import { useUIContext } from '@/context/UIContext';
+import { useEscapeDismiss, useBackdropDismiss } from '@/hooks/useModalDismiss';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -26,10 +27,21 @@ import { RECOGNIZED_CHANNELS } from '@/lib/simulation-engine/cityGrid';
 export const GMDAInfoModal: React.FC = () => {
   const { activeModal, setActiveModal } = useUIContext();
 
+  // Escape dismisses the overlay from the keyboard; a backdrop press
+  // dismisses it only when the click originates on the backdrop itself.
+  useEscapeDismiss(() => setActiveModal('none'), activeModal === 'gmda_info');
+  const handleBackdropClick = useBackdropDismiss(() => setActiveModal('none'));
+
   if (activeModal !== 'gmda_info') return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-md animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-label="GMDA drainage master plan briefing"
+      onClick={handleBackdropClick}
+    >
       <div className="relative flex flex-col w-full max-w-4xl max-h-[88vh] rounded-2xl border border-cyan-500/40 bg-slate-950/95 p-6 shadow-2xl overflow-hidden text-slate-200">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">

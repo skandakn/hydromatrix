@@ -9,6 +9,7 @@
 import React, { useState } from 'react';
 import { useFloodSimulation } from '@/hooks/useFloodSimulation';
 import { useUIContext } from '@/context/UIContext';
+import { useEscapeDismiss, useBackdropDismiss } from '@/hooks/useModalDismiss';
 import { GridNode } from '@/types/simulation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +42,11 @@ export const SitRepModal: React.FC = () => {
 
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Escape dismisses the overlay from the keyboard; a backdrop press
+  // dismisses it only when the click originates on the backdrop itself.
+  useEscapeDismiss(() => setActiveModal('none'), activeModal === 'export_report');
+  const handleBackdropClick = useBackdropDismiss(() => setActiveModal('none'));
 
   if (activeModal !== 'export_report') return null;
 
@@ -89,7 +95,13 @@ export const SitRepModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Situation report"
+      onClick={handleBackdropClick}
+    >
       <div className="relative flex flex-col w-full max-w-3xl max-h-[85vh] rounded-2xl border border-slate-700 bg-slate-950 p-6 shadow-2xl overflow-hidden text-slate-200">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">

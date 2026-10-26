@@ -61,12 +61,15 @@ export function runSimulationStep(
         for (let y = 0; y < GRID_HEIGHT; y++) {
           const row: GridNode[] = [];
           for (let x = 0; x < GRID_WIDTH; x++) {
-            res.push(row);
             const idx = y * GRID_WIDTH + x;
             if (flat[idx]) {
               row.push({ ...flat[idx] });
             }
           }
+          // Append the completed row once per y, not once per cell: pushing
+          // inside the x loop made every grid2D[y] alias row 0, so rows 1..17
+          // were never simulated.
+          res.push(row);
         }
         return res;
       })();

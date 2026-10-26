@@ -16,6 +16,7 @@
 import React, { useState } from 'react';
 import { useFloodSimulation } from '@/hooks/useFloodSimulation';
 import { useUIContext } from '@/context/UIContext';
+import { useEscapeDismiss, useBackdropDismiss } from '@/hooks/useModalDismiss';
 import {
   RescueCamp,
   RescueCampType,
@@ -65,6 +66,11 @@ export const RescueCampModal: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'recommendations' | 'active_camps' | 'corridors'>('recommendations');
 
+  // Escape dismisses the overlay from the keyboard; a backdrop press
+  // dismisses it only when the click originates on the backdrop itself.
+  useEscapeDismiss(() => setActiveModal('none'), activeModal === 'rescue_camps');
+  const handleBackdropClick = useBackdropDismiss(() => setActiveModal('none'));
+
   if (activeModal !== 'rescue_camps') return null;
 
   const occupancyRate = totalRescueCapacity > 0
@@ -108,7 +114,13 @@ export const RescueCampModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-3 md:p-6 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-3 md:p-6 backdrop-blur-md animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Relief camp placement planner"
+      onClick={handleBackdropClick}
+    >
       <div className="relative flex flex-col w-full max-w-5xl max-h-[90vh] rounded-2xl border border-cyan-500/40 bg-slate-950/95 shadow-2xl shadow-cyan-950/40 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/60 px-6 py-4">

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useUIContext } from '@/context/UIContext';
+import { useEscapeDismiss } from '@/hooks/useModalDismiss';
 import {
   PhoneCall,
   Mic,
@@ -321,6 +322,10 @@ export const EmergencyVoiceHelplineModal: React.FC = () => {
     }
   }, [activeModal]);
 
+  // Escape dismisses the overlay from the keyboard. Backdrop dismissal is
+  // intentionally not wired up: a stray click must not drop a live call.
+  useEscapeDismiss(() => setActiveModal('none'), activeModal === 'emergency_helpline');
+
   if (activeModal !== 'emergency_helpline') return null;
 
   const handleSendMessage = async (customText?: string) => {
@@ -473,7 +478,12 @@ export const EmergencyVoiceHelplineModal: React.FC = () => {
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Emergency voice helpline"
+    >
       <div className="relative flex flex-col h-[690px] max-h-[92vh] w-full max-w-4xl rounded-2xl border border-slate-800 bg-slate-900/95 shadow-2xl text-slate-100 overflow-hidden">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4 bg-slate-950/80">

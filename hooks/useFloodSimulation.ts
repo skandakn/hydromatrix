@@ -399,12 +399,13 @@ export const useFloodSimulation = create<FloodSimulationStore>((set, get) => {
         for (let y = 0; y < GRID_HEIGHT; y++) {
           const row: GridNode[] = [];
           for (let x = 0; x < GRID_WIDTH; x++) {
-            res2D.push(row);
             const idx = y * GRID_WIDTH + x;
             if (snap.grid[idx]) {
               row.push(snap.grid[idx]);
             }
           }
+          // Append the completed row once per y, matching jumpToTick() below.
+          res2D.push(row);
         }
         set({
           grid: res2D,

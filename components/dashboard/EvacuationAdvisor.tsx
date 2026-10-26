@@ -34,6 +34,7 @@
 import React, { useMemo } from 'react';
 import { useFloodSimulation } from '@/hooks/useFloodSimulation';
 import { useUIContext } from '@/context/UIContext';
+import { useEscapeDismiss, useBackdropDismiss } from '@/hooks/useModalDismiss';
 import { GridNode, ReliefCamp } from '@/types/simulation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -213,10 +214,21 @@ export const EvacuationAdvisor: React.FC = () => {
     return [...reliefCamps].sort((a, b) => (a.currentOccupancy / a.capacity) - (b.currentOccupancy / b.capacity))[0];
   };
 
+  // Escape dismisses the overlay from the keyboard; a backdrop press
+  // dismisses it only when the click originates on the backdrop itself.
+  useEscapeDismiss(() => setActiveModal('none'), activeModal === 'evacuation');
+  const handleBackdropClick = useBackdropDismiss(() => setActiveModal('none'));
+
   if (activeModal !== 'evacuation') return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Evacuation advisory"
+      onClick={handleBackdropClick}
+    >
       <div className="relative flex flex-col w-full max-w-5xl max-h-[92vh] rounded-2xl border border-amber-500/40 bg-slate-950/95 p-4 sm:p-6 shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">

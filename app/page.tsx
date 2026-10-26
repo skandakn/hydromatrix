@@ -32,6 +32,7 @@ import { EmergencyVoiceHelplineModal } from '@/components/dashboard/EmergencyVoi
 import { RescueCampModal } from '@/components/dashboard/RescueCampModal';
 import { OnboardingTour } from '@/components/dashboard/OnboardingTour';
 import { MessageCircle, X } from 'lucide-react';
+import { TOUR_SEEN_STORAGE_KEY } from '@/context/UIContext';
 
 export default function CrisisCommandPage() {
   const {
@@ -46,14 +47,21 @@ export default function CrisisCommandPage() {
   const { startSession, recordTelemetryTick, flushSession, saveBenchmarks } =
     useSessionPersistence();
 
-  // ── Auto-launch onboarding tour as soon as website opens ───────────────────
+  // ── Launch the onboarding tour on a first visit only ──────────────────────
+  // Previously the stored flag was deleted on every mount, so the tour replayed
+  // on each visit and could never be dismissed for good. The Header still
+  // exposes startTour() for an explicit replay.
   useEffect(() => {
+    let hasSeenTour = false;
     try {
-      localStorage.removeItem('flowshield_has_seen_tour');
+      hasSeenTour = localStorage.getItem(TOUR_SEEN_STORAGE_KEY) === 'true';
     } catch {
-      // LocalStorage access may fail in restricted contexts
+      // LocalStorage access may fail in restricted contexts; show the tour
+      // rather than suppressing it.
     }
-    startTour();
+    if (!hasSeenTour) {
+      startTour();
+    }
   }, [startTour]);
 
   const prevCritCountRef = useRef<number>(criticalZoneCount);
@@ -109,7 +117,7 @@ export default function CrisisCommandPage() {
   }, [isPlaying, playbackSpeed, runSimulationStep, recordTelemetryTick]);
 
   return (
-    <main className="relative flex flex-col h-screen w-screen overflow-hidden bg-slate-950 font-sans text-slate-100">
+    <main className="relative flex flex-col h-screen w-full overflow-hidden bg-slate-950 font-sans text-slate-100">
       {/* 1. Global Command Header Bar */}
       <Header />
 
@@ -122,7 +130,7 @@ export default function CrisisCommandPage() {
         <div
           data-tour="map-canvas"
           id="tour-map-canvas"
-          className="relative flex flex-1 h-full w-full overflow-hidden bg-slate-950"
+          className="relative flex flex-1 h-full w-full overflow-hidden bg-slate-950 select-none"
         >
           <FloodMap2D5 />
         </div>
