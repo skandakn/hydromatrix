@@ -262,6 +262,22 @@ export interface TelemetryPoint {
   activePumpsCount?: number;
 }
 
+/**
+ * A single early-warning event: the moment a sector escalated to WARNING or
+ * CRITICAL during a simulation run. Escalations only - a sector dropping back
+ * to a lower severity is not an event.
+ */
+export interface AlertEvent {
+  id: string;
+  tick: number;
+  timeLabel: string;
+  elapsedHours: number;
+  cellId: string;
+  sectorName: string;
+  level: Exclude<AlertLevel, 'SAFE'>;
+  waterDepthMeters: number;
+}
+
 export type EvacuationUrgencyLevel = 'Low' | 'Moderate' | 'Severe' | 'Immediate';
 
 export interface ScenarioComparisonRecord {

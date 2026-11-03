@@ -21,6 +21,7 @@ import { useFloodSimulation } from '@/hooks/useFloodSimulation';
 import { useUIContext } from '@/context/UIContext';
 import { GridNode, TelemetryPoint } from '@/types/simulation';
 import { PRESET_SCENARIOS } from '@/lib/simulation-engine/scenarios';
+import { AlertLogPanel } from '@/components/dashboard/AlertLogPanel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -745,6 +746,9 @@ export const RightDrawer: React.FC = () => {
                 })}
               </div>
             )}
+
+            {/* Chronological escalation record and CSV export of the run */}
+            <AlertLogPanel />
           </div>
         )}
       </div>

@@ -27,6 +27,8 @@ import {
   DisasterEvent,
   DisasterType,
   TelemetryPoint,
+  AlertEvent,
+  AlertLevel,
   ScenarioComparisonRecord,
   EvacuationUrgencyLevel,
   AutomaticWeatherStation,
@@ -58,6 +60,10 @@ import {
 } from '@/lib/simulation-engine/rescueCampEngine';
 
 const MAX_HISTORY_BUFFER = 400;
+const MAX_ALERT_EVENTS = 200;
+
+/** Ordering used to decide whether a sector's alert level has escalated. */
+const ALERT_SEVERITY: Record<AlertLevel, number> = { SAFE: 0, WARNING: 1, CRITICAL: 2 };
 
 export interface FloodSimulationStore {
   // --- 1. Global Simulation State (Required by Specification) ---
@@ -100,6 +106,14 @@ export interface FloodSimulationStore {
 
   history: SimulationSnapshot[];
   telemetryHistory: TelemetryPoint[];
+  alertEvents: AlertEvent[];
+  /**
+   * Last alert level this detector observed per cell. Tracked here rather than
+   * read back off the grid, because generateCityGrid() seeds cells with
+   * placeholder statuses (36 CRITICAL / 32 WARNING) before any physics has run,
+   * which would otherwise mask every real escalation.
+   */
+  alertLevelsByCell: Record<string, AlertLevel>;
   activeDisasters: DisasterEvent[];
   selectedCellId: string | null;
 
@@ -130,6 +144,7 @@ export interface FloodSimulationStore {
   simulateGMDAPumpsFailure: () => void;
   loadScenario: (presetId: string) => void;
   resetSimulation: () => void;
+  clearAlertEvents: () => void;
   injectDisaster: (type: DisasterType) => void;
   removeDisaster: (disasterId: string) => void;
   toggleCellDrainageBlock: (cellId: string) => void;
@@ -246,6 +261,8 @@ export const useFloodSimulation = create<FloodSimulationStore>((set, get) => {
 
     history: [initialSnapshot],
     telemetryHistory: [initialTelemetry],
+    alertEvents: [],
+    alertLevelsByCell: {},
     activeDisasters: [],
     selectedCellId: null,
     floodedAreaSqKm: 0.18,
@@ -292,6 +309,43 @@ export const useFloodSimulation = create<FloodSimulationStore>((set, get) => {
       );
 
       const timeLabel = `T+${String(nextHours).padStart(2, '0')}h`;
+
+      // ── EARLY WARNING EVENT DETECTION ────────────────────────────────────
+      // Record a sector at the moment it escalates (SAFE -> WARNING/CRITICAL,
+      // or WARNING -> CRITICAL). Sectors that are unchanged, receding, or
+      // still SAFE produce no event, so the log stays a list of what newly
+      // went wrong rather than a per-tick dump of the whole grid.
+      const updatedAlertLevels: Record<string, AlertLevel> = { ...state.alertLevelsByCell };
+      const newAlertEvents: AlertEvent[] = [];
+      for (const cell of result.nextGrid) {
+        // Permanent water bodies are excluded: the Deepor Beel wetland is held
+        // at a 0.40 m baseline by the physics step and the Brahmaputra at
+        // 1.15 m, so both sit above the warning threshold at all times and
+        // would otherwise bury real sector alerts under standing-water noise.
+        if (cell.infrastructure === 'wetland' || cell.channel === 'Brahmaputra') continue;
+
+        const before = updatedAlertLevels[cell.id] ?? 'SAFE';
+        // Record the level on every tick, recessions included, so a sector that
+        // recovers and later floods again is reported a second time.
+        updatedAlertLevels[cell.id] = cell.status;
+        if (cell.status === 'SAFE') continue;
+        if (ALERT_SEVERITY[cell.status] <= ALERT_SEVERITY[before]) continue;
+        newAlertEvents.push({
+          id: `${cell.id}-${nextTick}-${cell.status}`,
+          tick: nextTick,
+          timeLabel,
+          elapsedHours: nextHours,
+          cellId: cell.id,
+          sectorName: cell.name,
+          level: cell.status,
+          waterDepthMeters: cell.waterDepth,
+        });
+      }
+
+      const updatedAlertEvents = [...state.alertEvents, ...newAlertEvents];
+      if (updatedAlertEvents.length > MAX_ALERT_EVENTS) {
+        updatedAlertEvents.splice(0, updatedAlertEvents.length - MAX_ALERT_EVENTS);
+      }
 
       // Update pump operational metrics
       const updatedPumps: GMDAPumpStation[] = state.gmdaPumps.map(pump => {
@@ -377,6 +431,8 @@ export const useFloodSimulation = create<FloodSimulationStore>((set, get) => {
         totalRescueCapacity: totalCap,
         history: updatedHistory,
         telemetryHistory: updatedTelemetry,
+        alertEvents: updatedAlertEvents,
+        alertLevelsByCell: updatedAlertLevels,
       });
     },
 
@@ -642,6 +698,8 @@ export const useFloodSimulation = create<FloodSimulationStore>((set, get) => {
           activePumpsCount: initialActive.size,
         }],
         activeDisasters: [],
+        alertEvents: [],
+        alertLevelsByCell: {},
         config: {
           ...DEFAULT_CONFIG,
           rainfallIntensity: preset.rainfallIntensity,
@@ -655,6 +713,8 @@ export const useFloodSimulation = create<FloodSimulationStore>((set, get) => {
       // Run one step to hydrate canvas
       get().runSimulationStep();
     },
+
+    clearAlertEvents: () => set({ alertEvents: [] }),
 
     resetSimulation: () => {
       const state = get();
