@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   ShieldAlert,
+  Shield,
   BarChart3,
   FileText,
   Volume2,
@@ -299,6 +300,19 @@ export const Header: React.FC = () => {
           <FileText className="h-3.5 w-3.5 text-slate-400" />
           <span className="hidden 2xl:inline">{t('sitRep')}</span>
         </Button>
+
+        {/* Flood Response Drill Mode (training surface) */}
+        <Link href="/drill">
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5 text-xs border-emerald-500/40 bg-emerald-950/30 text-emerald-300 hover:bg-emerald-900/50 hover:border-emerald-400 px-2 sm:px-2.5"
+            title="Open Flood Response Drill training mode"
+          >
+            <Shield className="h-3.5 w-3.5 text-emerald-400" />
+            <span className="hidden lg:inline">Drill Mode</span>
+          </Button>
+        </Link>
 
         {/* Guided Onboarding Tour Launcher */}
         <Button
